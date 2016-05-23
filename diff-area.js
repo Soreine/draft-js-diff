@@ -17,7 +17,6 @@ var DiffArea = React.createClass({
     },
 
     getInitialState: function () {
-        console.log('getInitialState');
         var left = this.props.left;
         var right = this.props.right;
 
@@ -38,7 +37,6 @@ var DiffArea = React.createClass({
     },
 
     onChange: function (rightState) {
-        console.log('onChange');
         var newState = {};
 
         // Text changed ?
@@ -67,17 +65,16 @@ var DiffArea = React.createClass({
     },
 
     render: function () {
-        console.log('render');
         return <div className='diffarea'>
             <div className='left'>
                 <Draft.Editor
                     readOnly={true}
-                    editorState={this.state.rightState}
+                    editorState={this.state.leftState}
                 />
             </div>
             <div className='right'>
                 <Draft.Editor
-                    editorState={this.state.leftState}
+                    editorState={this.state.rightState}
                     onChange={this.onChange}
                 />
             </div>
@@ -115,10 +112,10 @@ function computeDiff(txt1, txt2) {
 // Decorators
 
 var InsertedSpan = function (props) {
-    return <span {...props} style={{backgroundColor: '#ffecec'}}>{props.children}</span>;
+    return <span {...props} style={{backgroundColor: '#eaffea'}}>{props.children}</span>;
 };
 var RemovedSpan = function (props) {
-    return <span {...props} style={{backgroundColor: '#eaffea'}}>{props.children}</span>;
+    return <span {...props} style={{backgroundColor: '#ffecec'}}>{props.children}</span>;
 };
 
 /**

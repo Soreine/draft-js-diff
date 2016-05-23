@@ -1,0 +1,14 @@
+body {
+    font-family: monospace;
+}
+
+.left {
+    color: #666;
+}
+
+.left, .right {
+    width: 44%;
+    margin: 3%;
+    display: inline-block;
+    vertical-align: text-top;
+}
