@@ -40,12 +40,13 @@ var DiffArea = React.createClass({
         var newState = {};
 
         // Text changed ?
-        var contentChanged = this.state.rightState.getCurrentContent() !== rightState.getCurrentContent();
+        var contentChanged = this.state.rightState.getCurrentContent()
+                !== rightState.getCurrentContent();
 
         // Update diffs
         if (contentChanged) {
-            var right = rightState.getCurrentContent().getPlainText();
             var left = this.props.left;
+            var right = rightState.getCurrentContent().getPlainText();
 
             var diffs = computeDiff(left, right);
 
@@ -58,6 +59,7 @@ var DiffArea = React.createClass({
             });
         } else {
             // Just update the EditorState
+            newState.leftState = this.state.leftState;
             newState.rightState = rightState;
         }
 
@@ -68,8 +70,8 @@ var DiffArea = React.createClass({
         return <div className='diffarea'>
             <div className='left'>
                 <Draft.Editor
-                    readOnly={true}
                     editorState={this.state.leftState}
+                    readOnly={true}
                 />
             </div>
             <div className='right'>
@@ -96,14 +98,8 @@ function editorStateFromText(text, decorator) {
     return Draft.EditorState.createWithContent(content, decorator);
 }
 
-// Check for changes
-function contentStateHasChanged(oldEditorState, newEditorState) {
-    return (!oldEditorState || !newEditorState)
-        || oldEditorState.getCurrentContent() !== newEditorState.getCurrentContent();
-}
-
 function computeDiff(txt1, txt2) {
-    var diffs = DMP.diff_main(left, right);
+    var diffs = DMP.diff_main(txt1, txt2);
     // Simplify diffs a bit to make it human readable (but non optimal)
     DMP.diff_cleanupSemantic(diffs);
     return diffs;
@@ -112,10 +108,10 @@ function computeDiff(txt1, txt2) {
 // Decorators
 
 var InsertedSpan = function (props) {
-    return <span {...props} style={{backgroundColor: '#eaffea'}}>{props.children}</span>;
+    return <span {...props} className="inserted">{props.children}</span>;
 };
 var RemovedSpan = function (props) {
-    return <span {...props} style={{backgroundColor: '#ffecec'}}>{props.children}</span>;
+    return <span {...props} className="removed">{props.children}</span>;
 };
 
 /**

@@ -8,7 +8,14 @@ body {
 
 .left, .right {
     width: 44%;
-    margin: 3%;
+    margin: 20px 3%;
     display: inline-block;
     vertical-align: text-top;
+}
+
+.removed {
+    background-color: #ffecec
+}
+.inserted {
+    background-color: #eaffea
 }
