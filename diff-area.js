@@ -24,15 +24,15 @@ var DiffArea = React.createClass({
         var state = {};
 
         // Compute diff on whole texts
-        var diffs = DMP.diff_main(left, right);
+        var diffs = computeDiff(left, right);
 
         // Make decorators
         var removedDecorator = createDiffsDecorator(diffs, DIFF.REMOVED);
         var insertedDecorator = createDiffsDecorator(diffs, DIFF.INSERTED);
 
         // Create editors state
-        state.leftState = editorStateFromText(props.left, removedDecorator);
-        state.rightState = editorStateFromText(props.right, insertedDecorator);
+        state.leftState = editorStateFromText(left, removedDecorator);
+        state.rightState = editorStateFromText(right, insertedDecorator);
 
         return state;
     },
@@ -49,7 +49,7 @@ var DiffArea = React.createClass({
             var right = rightState.getCurrentContent().getPlainText();
             var left = this.props.left;
 
-            var diffs = DMP.diff_main(left, right);
+            var diffs = computeDiff(left, right);
 
             // Update the decorators
             newState.leftState = Draft.EditorState.set(this.state.leftState, {
@@ -69,13 +69,13 @@ var DiffArea = React.createClass({
     render: function () {
         console.log('render');
         return <div className='diffarea'>
-            <div style={{display: inline-block, width:'50%'}}>
+            <div className='left'>
                 <Draft.Editor
                     readOnly={true}
                     editorState={this.state.rightState}
                 />
             </div>
-            <div style={{display: inline-block, width:'50%'}}>
+            <div className='right'>
                 <Draft.Editor
                     editorState={this.state.leftState}
                     onChange={this.onChange}
@@ -103,6 +103,13 @@ function editorStateFromText(text, decorator) {
 function contentStateHasChanged(oldEditorState, newEditorState) {
     return (!oldEditorState || !newEditorState)
         || oldEditorState.getCurrentContent() !== newEditorState.getCurrentContent();
+}
+
+function computeDiff(txt1, txt2) {
+    var diffs = DMP.diff_main(left, right);
+    // Simplify diffs a bit to make it human readable (but non optimal)
+    DMP.diff_cleanupSemantic(diffs);
+    return diffs;
 }
 
 // Decorators
@@ -147,3 +154,14 @@ function findDiff(diffs, type, contentBlock, callback) {
         }
     });
 }
+
+
+// ---- main
+
+var left = document.getElementById('left-initial').innerText;
+var right = document.getElementById('right-initial').innerText;
+
+ReactDOM.render(
+        <DiffArea left={left} right={right}></DiffArea>,
+    document.getElementById('content')
+);
