@@ -1,4 +1,4 @@
-/* globals React, ReactDOM, Draft, diff_match_patch */
+/* globals React, ReactDOM, Draft, diff_match_patch, lodash */
 
 var DMP = new diff_match_patch();
 
@@ -9,6 +9,11 @@ var DIFF = {
     EQUAL: 0
 };
 
+var DEBOUNCE_WAIT = 600; // ms
+var DEBOUNCE_OPTS = {
+    trailing: true // We want to update after the delay only
+};
+
 var DiffArea = React.createClass({
 
     propTypes: {
@@ -17,6 +22,8 @@ var DiffArea = React.createClass({
     },
 
     getInitialState: function () {
+        // Make a debounced diff update
+        this.debouncedUpdateDiffs = _.debounce(this.updateDiffs, DEBOUNCE_WAIT, DEBOUNCE_OPTS);
         var left = this.props.left;
         var right = this.props.right;
 
@@ -37,32 +44,37 @@ var DiffArea = React.createClass({
     },
 
     onChange: function (rightState) {
-        var newState = {};
-
         // Text changed ?
         var contentChanged = this.state.rightState.getCurrentContent()
                 !== rightState.getCurrentContent();
 
         // Update diffs
         if (contentChanged) {
-            var left = this.props.left;
-            var right = rightState.getCurrentContent().getPlainText();
-
-            var diffs = computeDiff(left, right);
-
-            // Update the decorators
-            newState.leftState = Draft.EditorState.set(this.state.leftState, {
-                decorator: createDiffsDecorator(diffs, DIFF.REMOVED)
-            });
-            newState.rightState = Draft.EditorState.set(rightState, {
-                decorator: createDiffsDecorator(diffs, DIFF.INSERTED)
-            });
-        } else {
-            // Just update the EditorState
-            newState.leftState = this.state.leftState;
-            newState.rightState = rightState;
+            this.debouncedUpdateDiffs();
         }
 
+        // Update the EditorState
+        this.setState({
+            leftState: this.state.leftState,
+            rightState: rightState
+        });
+    },
+
+    // We use a debounced version of it
+    updateDiffs: function () {
+        var newState = {};
+        var left = this.props.left;
+        var right = this.state.rightState.getCurrentContent().getPlainText();
+
+        var diffs = computeDiff(left, right);
+
+        // Update the decorators
+        newState.leftState = Draft.EditorState.set(this.state.leftState, {
+            decorator: createDiffsDecorator(diffs, DIFF.REMOVED)
+        });
+        newState.rightState = Draft.EditorState.set(this.state.rightState, {
+            decorator: createDiffsDecorator(diffs, DIFF.INSERTED)
+        });
         this.setState(newState);
     },
 
