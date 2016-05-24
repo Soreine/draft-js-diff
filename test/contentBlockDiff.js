@@ -1,5 +1,4 @@
 var should = require('should');
-var Draft = require('draft-js');
 
 var data = require('./data');
 
@@ -13,8 +12,8 @@ var msg = {
 
 describe('contentBlockDiff', function() {
 
-    var editor1 = editorStateFromText(data.text1);
-    var editor2 = editorStateFromText(data.text2);
+    var editor1 = data.editorStateFromText(data.text1);
+    var editor2 = data.editorStateFromText(data.text2);
 
     it('should do a diff accross blocks, and return original block keys', function() {
         var blockMap1 = editor1.getCurrentContent().getBlockMap();
@@ -40,8 +39,3 @@ describe('contentBlockDiff', function() {
         ]);
     });
 });
-
-function editorStateFromText(text) {
-    var content = Draft.ContentState.createFromText(text);
-    return Draft.EditorState.createWithContent(content);
-}
