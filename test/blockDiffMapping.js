@@ -18,7 +18,7 @@ describe('blockDiffMapping', function() {
 
         // Map to block's texts
         blockMap1.map(function (block, key) {
-            var mappedKey = mappings[0][key];
+            var mappedKey = mappings[0][key].key;
             var mappedText = mappedKey ? blockMap2.get(mappedKey).getText() : undefined;
             return [block.getText(), mappedText];
         }).toArray().should.deepEqual([
@@ -30,7 +30,7 @@ describe('blockDiffMapping', function() {
         ]);
 
         blockMap2.map(function (block, key) {
-            var mappedKey = mappings[1][key];
+            var mappedKey = mappings[1][key].key;
             var mappedText = mappedKey ? blockMap1.get(mappedKey).getText() : undefined;
             return [block.getText(), mappedText];
         }).toArray().should.deepEqual([

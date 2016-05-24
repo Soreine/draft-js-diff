@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "diff-area.js",
   "scripts": {
+    "demo": "browserify -t babelify demo.js -o demo/bundle.js",
     "test": "mocha"
   },
   "repository": {
@@ -17,9 +18,14 @@
   "dependencies": {
     "diff-match-patch": "^1.0.0",
     "draft-js": "^0.7.0",
-    "mocha": "^2.5.2",
     "react": "^15.1.0",
-    "react-dom": "^15.1.0",
+    "react-dom": "^15.1.0"
+  },
+  "devDependencies": {
+    "babel-preset-react": "^6.5.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.0.1",
+    "mocha": "^2.5.2",
     "should": "^8.4.0"
   }
 }

@@ -1,6 +1,9 @@
-/* globals React, ReactDOM, Draft, diff_match_patch */
+var React = require('react');
+var Immutable = require('immutable');
+var Draft = require('draft-js');
 
-var DMP = new diff_match_patch();
+var contentBlockDiff = require('./lib/contentBlockDiff');
+var blockDiffMapping = require('./lib/blockDiffMapping');
 
 // diff_match_patch codes
 var DIFF = {
@@ -22,21 +25,30 @@ var DiffArea = React.createClass({
 
         var state = {};
 
-        // Compute diff on whole texts
-        var diffs = computeDiff(left, right);
+        // Create editors state
+        state.leftState = editorStateFromText(left);
+        state.rightState = editorStateFromText(right);
+
+        // Compute diff at block level
+        var blockMapLeft = state.leftState.getCurrentContent().getBlockMap();
+        var blockMapRight = state.rightState.getCurrentContent().getBlockMap();
+        var blockDiffs = contentBlockDiff(blockMapLeft, blockMapRight);
+
+        var mappings = blockDiffMapping(blockDiffs);
 
         // Make decorators
-        var removedDecorator = createDiffsDecorator(diffs, DIFF.REMOVED);
-        var insertedDecorator = createDiffsDecorator(diffs, DIFF.INSERTED);
-
-        // Create editors state
-        state.leftState = editorStateFromText(left, removedDecorator);
-        state.rightState = editorStateFromText(right, insertedDecorator);
+        state.leftState = Draft.EditorState.set(state.leftState, {
+            decorator: createDiffsDecorator(toTextMapping(mappings[0], blockMapRight), DIFF.REMOVED)
+        });
+        state.rightState = Draft.EditorState.set(state.rightState, {
+            decorator: createDiffsDecorator(toTextMapping(mappings[1], blockMapLeft), DIFF.INSERTED)
+        });
 
         return state;
     },
 
     onChange: function (rightState) {
+        return;
         var newState = {};
 
         // Text changed ?
@@ -84,25 +96,18 @@ var DiffArea = React.createClass({
     }
 });
 
-function editorStateFromText(text, decorator) {
-    // For now, we can only work on a single content block.
-    var content = Draft.convertFromRaw({
-        blocks: [
-            {
-                text: text,
-                type: 'unstyled'
-            }
-        ],
-        entityMap: {}
-    });
-    return Draft.EditorState.createWithContent(content, decorator);
+function toTextMapping(blockMapping, blockMap) {
+    return new Immutable.Map(blockMapping).map(function (mappedDiff, blockKey) {
+        return {
+            type: mappedDiff.type,
+            mappedText: mappedDiff.key ? blockMap.get(mappedDiff.key).getText() : undefined
+        };
+    }).toObject();
 }
 
-function computeDiff(txt1, txt2) {
-    var diffs = DMP.diff_main(txt1, txt2);
-    // Simplify diffs a bit to make it human readable (but non optimal)
-    DMP.diff_cleanupSemantic(diffs);
-    return diffs;
+function editorStateFromText(text) {
+    var content = Draft.ContentState.createFromText(text);
+    return Draft.EditorState.createWithContent(content);
 }
 
 // Decorators
@@ -115,46 +120,25 @@ var RemovedSpan = function (props) {
 };
 
 /**
- * @param diffs The diff_match_patch result.
+ * @param textMapping
  * @param type The type of diff to highlight
  */
-function createDiffsDecorator(diffs, type) {
+function createDiffsDecorator(textMapping, type) {
     return new Draft.CompositeDecorator([{
-        strategy: findDiff.bind(undefined, diffs, type),
+        strategy: findDiff.bind(undefined, textMapping, type),
         component: type === DIFF.INSERTED ? InsertedSpan : RemovedSpan
     }]);
 }
 
 /**
- * Applies the decorator callback to all differences in the single content block.
+ * Applies the decorator callback to all differences in the content block.
  * This needs to be cheap, because decorators are called often.
  */
-function findDiff(diffs, type, contentBlock, callback) {
-    var charIndex = 0;
-    diffs.forEach(function (diff) {
-        var diffType = diff[0];
-        var diffText = diff[1];
-        if (diffType === DIFF.EQUAL) {
-            // No highlight. Move to next difference
-            charIndex += diffText.length;
-        } else if (diffType === type) {
-            // Highlight, and move to next difference
-            callback(charIndex, charIndex + diffText.length);
-            charIndex += diffText.length;
-        } else {
-            // The diff text should not be in the contentBlock, so skip.
-            return;
-        }
-    });
+function findDiff(textMapping, type, contentBlock, callback) {
+    var key = contentBlock.getKey();
+    if (textMapping[key].type === type) {
+        callback(0, contentBlock.getLength());
+    }
 }
 
-
-// ---- main
-
-var left = document.getElementById('left-initial').innerText;
-var right = document.getElementById('right-initial').innerText;
-
-ReactDOM.render(
-        <DiffArea left={left} right={right}></DiffArea>,
-    document.getElementById('content')
-);
+module.exports = DiffArea;
