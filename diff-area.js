@@ -16,6 +16,9 @@ var DiffArea = React.createClass({
         right: React.PropTypes.string
     },
 
+    // Accessed by decorators functions
+    diffs: [],
+
     getInitialState: function () {
         var left = this.props.left;
         var right = this.props.right;
@@ -23,11 +26,11 @@ var DiffArea = React.createClass({
         var state = {};
 
         // Compute diff on whole texts
-        var diffs = computeDiff(left, right);
+        this.diffs = computeDiff(left, right);
 
         // Make decorators
-        var removedDecorator = createDiffsDecorator(diffs, DIFF.REMOVED);
-        var insertedDecorator = createDiffsDecorator(diffs, DIFF.INSERTED);
+        var removedDecorator = createDiffsDecorator(this, DIFF.REMOVED);
+        var insertedDecorator = createDiffsDecorator(this, DIFF.INSERTED);
 
         // Create editors state
         state.leftState = editorStateFromText(left, removedDecorator);
@@ -42,26 +45,15 @@ var DiffArea = React.createClass({
         // Text changed ?
         var contentChanged = this.state.rightState.getCurrentContent()
                 !== rightState.getCurrentContent();
-
         // Update diffs
         if (contentChanged) {
             var left = this.props.left;
             var right = rightState.getCurrentContent().getPlainText();
-
-            var diffs = computeDiff(left, right);
-
-            // Update the decorators
-            newState.leftState = Draft.EditorState.set(this.state.leftState, {
-                decorator: createDiffsDecorator(diffs, DIFF.REMOVED)
-            });
-            newState.rightState = Draft.EditorState.set(rightState, {
-                decorator: createDiffsDecorator(diffs, DIFF.INSERTED)
-            });
-        } else {
-            // Just update the EditorState
-            newState.leftState = this.state.leftState;
-            newState.rightState = rightState;
+            this.diffs = computeDiff(left, right);
         }
+        // Just update the EditorState
+        newState.leftState = this.state.leftState;
+        newState.rightState = rightState;
 
         this.setState(newState);
     },
@@ -115,12 +107,12 @@ var RemovedSpan = function (props) {
 };
 
 /**
- * @param diffs The diff_match_patch result.
+ * @param diffsOwner The diff_match_patch result owner.
  * @param type The type of diff to highlight
  */
-function createDiffsDecorator(diffs, type) {
+function createDiffsDecorator(diffsOwner, type) {
     return new Draft.CompositeDecorator([{
-        strategy: findDiff.bind(undefined, diffs, type),
+        strategy: findDiff.bind(undefined, diffsOwner, type),
         component: type === DIFF.INSERTED ? InsertedSpan : RemovedSpan
     }]);
 }
@@ -129,9 +121,9 @@ function createDiffsDecorator(diffs, type) {
  * Applies the decorator callback to all differences in the single content block.
  * This needs to be cheap, because decorators are called often.
  */
-function findDiff(diffs, type, contentBlock, callback) {
+function findDiff(diffsOwner, type, contentBlock, callback) {
     var charIndex = 0;
-    diffs.forEach(function (diff) {
+    diffsOwner.diffs.forEach(function (diff) {
         var diffType = diff[0];
         var diffText = diff[1];
         if (diffType === DIFF.EQUAL) {
