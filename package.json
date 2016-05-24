@@ -1,0 +1,25 @@
+{
+  "name": "draft-js-diff",
+  "version": "0.0.1",
+  "main": "diff-area.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Soreine/draftjs-diff.git"
+  },
+  "author": "Nicolas Gaborit",
+  "bugs": {
+    "url": "https://github.com/Soreine/draftjs-diff/issues"
+  },
+  "homepage": "https://github.com/Soreine/draftjs-diff#readme",
+  "dependencies": {
+    "diff-match-patch": "^1.0.0",
+    "draft-js": "^0.7.0",
+    "mocha": "^2.5.2",
+    "react": "^15.1.0",
+    "react-dom": "^15.1.0",
+    "should": "^8.4.0"
+  }
+}
