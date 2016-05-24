@@ -4,11 +4,14 @@ var Draft = require('draft-js');
 
 var contentBlockDiff = require('./lib/contentBlockDiff');
 var blockDiffMapping = require('./lib/blockDiffMapping');
+var diff_word_mode = require('./lib/diff-word-mode');
+
+var DWM = new diff_word_mode();
 
 // diff_match_patch codes
 var DIFF = {
-    REMOVED: -1,
-    INSERTED: 1,
+    DELETE: -1,
+    INSERT: 1,
     EQUAL: 0
 };
 
@@ -38,17 +41,16 @@ var DiffArea = React.createClass({
 
         // Make decorators
         state.leftState = Draft.EditorState.set(state.leftState, {
-            decorator: createDiffsDecorator(toTextMapping(mappings[0], blockMapRight), DIFF.REMOVED)
+            decorator: createDiffsDecorator(toTextMapping(mappings[0], blockMapRight), DIFF.DELETE)
         });
         state.rightState = Draft.EditorState.set(state.rightState, {
-            decorator: createDiffsDecorator(toTextMapping(mappings[1], blockMapLeft), DIFF.INSERTED)
+            decorator: createDiffsDecorator(toTextMapping(mappings[1], blockMapLeft), DIFF.INSERT)
         });
 
         return state;
     },
 
     onChange: function (rightState) {
-        return;
         var newState = {};
 
         // Text changed ?
@@ -57,17 +59,20 @@ var DiffArea = React.createClass({
 
         // Update diffs
         if (contentChanged) {
-            var left = this.props.left;
-            var right = rightState.getCurrentContent().getPlainText();
 
-            var diffs = computeDiff(left, right);
+            // Compute diff at block level
+            var blockMapLeft = this.state.leftState.getCurrentContent().getBlockMap();
+            var blockMapRight = rightState.getCurrentContent().getBlockMap();
+            var blockDiffs = contentBlockDiff(blockMapLeft, blockMapRight);
+
+            var mappings = blockDiffMapping(blockDiffs);
 
             // Update the decorators
             newState.leftState = Draft.EditorState.set(this.state.leftState, {
-                decorator: createDiffsDecorator(diffs, DIFF.REMOVED)
+                decorator: createDiffsDecorator(toTextMapping(mappings[0], blockMapRight), DIFF.DELETE)
             });
             newState.rightState = Draft.EditorState.set(rightState, {
-                decorator: createDiffsDecorator(diffs, DIFF.INSERTED)
+                decorator: createDiffsDecorator(toTextMapping(mappings[1], blockMapLeft), DIFF.INSERT)
             });
         } else {
             // Just update the EditorState
@@ -75,7 +80,9 @@ var DiffArea = React.createClass({
             newState.rightState = rightState;
         }
 
-        this.setState(newState);
+        this.setState({
+            rightState: rightState
+        });
     },
 
     render: function () {
@@ -126,7 +133,7 @@ var RemovedSpan = function (props) {
 function createDiffsDecorator(textMapping, type) {
     return new Draft.CompositeDecorator([{
         strategy: findDiff.bind(undefined, textMapping, type),
-        component: type === DIFF.INSERTED ? InsertedSpan : RemovedSpan
+        component: type === DIFF.INSERT ? InsertedSpan : RemovedSpan
     }]);
 }
 
@@ -136,8 +143,38 @@ function createDiffsDecorator(textMapping, type) {
  */
 function findDiff(textMapping, type, contentBlock, callback) {
     var key = contentBlock.getKey();
-    if (textMapping[key].type === type) {
-        callback(0, contentBlock.getLength());
+    var blockDiff = textMapping[key];
+    if (!blockDiff) {
+        return;
+    }
+    if (blockDiff.type === type) {
+        var text1;
+        var text2;
+        if (type === DIFF.INSERT) {
+            text1 = blockDiff.mappedText || '';
+            text2 = contentBlock.getText();
+        } else {
+            text1 = contentBlock.getText();
+            text2 = blockDiff.mappedText || '';
+        }
+        var diffs = DWM.diff_wordMode(text1, text2);
+
+        var charIndex = 0;
+        diffs.forEach(function (diff) {
+            var diffType = diff[0];
+            var diffText = diff[1];
+            if (diffType === DIFF.EQUAL) {
+                // No highlight. Move to next difference
+                charIndex += diffText.length;
+            } else if (diffType === type) {
+                // Highlight, and move to next difference
+                callback(charIndex, charIndex + diffText.length);
+                charIndex += diffText.length;
+            } else {
+                // The diff text should not be in the contentBlock, so skip.
+                return;
+            }
+        });
     }
 }
 
