@@ -80,9 +80,7 @@ var DiffArea = React.createClass({
             newState.rightState = rightState;
         }
 
-        this.setState({
-            rightState: rightState
-        });
+        this.setState(newState);
     },
 
     render: function () {
