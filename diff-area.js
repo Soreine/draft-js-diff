@@ -161,10 +161,9 @@ function mapDiffsToBlocks(diffs, type, blockMap) {
     var blockStartIndex = 0;
     return blockMap.map(function (block) {
         var ranges = findRangesBetween(absoluteRanges, blockStartIndex, blockStartIndex + block.getLength());
-        blockStartIndex += block.getLength();
+        blockStartIndex += block.getLength() + 1; // Account for \n
         return {
             text: block.getText(),
-            key: block.getKey(),
             ranges: ranges
         };
     });
@@ -199,10 +198,6 @@ function findDiff(mappedRanges, type, contentBlock, callback) {
         mapping.ranges.forEach(function (range) {
             callback(range.start, range.end);
         });
-    } else {
-        if (mapping) {
-            console.log('Content changed', mapping.key, contentBlock.getKey());
-        }
     }
 }
 
