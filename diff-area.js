@@ -9,7 +9,7 @@ var DIFF = {
     EQUAL: 0
 };
 
-var DEBOUNCE_WAIT = 600; // ms
+var DEBOUNCE_WAIT = 300; // ms
 var DEBOUNCE_OPTS = {
     trailing: true // We want to update after the delay only
 };
@@ -48,27 +48,37 @@ var DiffArea = React.createClass({
         return state;
     },
 
-    onChange: function (rightState) {
+    onRightChanged: function (rightState) {
         // Text changed ?
         var contentChanged = this.state.rightState.getCurrentContent()
                 !== rightState.getCurrentContent();
-
         // Update diffs
         if (contentChanged) {
             this.debouncedUpdateDiffs();
         }
-
         // Update the EditorState
         this.setState({
-            leftState: this.state.leftState,
             rightState: rightState
+        });
+    },
+
+    onLeftChanged: function (leftState) {
+        var contentChanged = this.state.leftState.getCurrentContent()
+                !== leftState.getCurrentContent();
+        // Update diffs
+        if (contentChanged) {
+            this.debouncedUpdateDiffs();
+        }
+        // Update the EditorState
+        this.setState({
+            leftState: leftState
         });
     },
 
     // We use a debounced version of it
     updateDiffs: function () {
         var newState = {};
-        var left = this.props.left;
+        var left = this.state.leftState.getCurrentContent().getPlainText();
         var right = this.state.rightState.getCurrentContent().getPlainText();
 
         var diffs = computeDiff(left, right);
@@ -91,13 +101,13 @@ var DiffArea = React.createClass({
             <div className='left'>
                 <Draft.Editor
                     editorState={this.state.leftState}
-                    readOnly={true}
+                    onChange={this.onLeftChanged}
                 />
             </div>
             <div className='right'>
                 <Draft.Editor
                     editorState={this.state.rightState}
-                    onChange={this.onChange}
+                    onChange={this.onRightChanged}
                 />
             </div>
         </div>;
