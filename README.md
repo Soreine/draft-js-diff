@@ -36,9 +36,9 @@ Keeping these numbers in mind as we design solutions.
 
 Here are rough order of magnitudes for the `diff_match_patch` algorithm with default options.
 
-| Characters count | Time (ms) | Diff length |
+| Characters count | Diff length | Time (ms) |
 | ---------------- | --------- | --------- |
-| 1000 (~5 paragraph) | 1-5       | 40        |
-| 6000 (~30 paragraphs) | 60        | 300       |
+| 1000 (~5 paragraph) | 40 | 1-5  |
+| 6000 (~30 paragraphs) | 300 | 60 |
 
 The decorators calls never takes more than 1ms.
