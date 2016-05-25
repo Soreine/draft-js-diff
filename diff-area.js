@@ -29,16 +29,21 @@ var DiffArea = React.createClass({
 
         var state = {};
 
+        // Create editors state
+        state.leftState = editorStateFromText(left);
+        state.rightState = editorStateFromText(right);
+
         // Compute diff on whole texts
         var diffs = computeDiff(left, right);
-
-        // Make decorators
-        var removedDecorator = createDiffsDecorator(diffs, DIFF.REMOVED);
-        var insertedDecorator = createDiffsDecorator(diffs, DIFF.INSERTED);
-
-        // Create editors state
-        state.leftState = editorStateFromText(left, removedDecorator);
-        state.rightState = editorStateFromText(right, insertedDecorator);
+        var mappingLeft = mapDiffsToBlocks(diffs, DIFF.REMOVED, state.leftState.getCurrentContent().getBlockMap());
+        var mappingRight = mapDiffsToBlocks(diffs, DIFF.INSERTED, state.rightState.getCurrentContent().getBlockMap());
+        // Update the decorators
+        state.leftState = Draft.EditorState.set(state.leftState, {
+            decorator: createDiffsDecorator(mappingLeft, DIFF.REMOVED)
+        });
+        state.rightState = Draft.EditorState.set(state.rightState, {
+            decorator: createDiffsDecorator(mappingRight, DIFF.INSERTED)
+        });
 
         return state;
     },
@@ -68,12 +73,15 @@ var DiffArea = React.createClass({
 
         var diffs = computeDiff(left, right);
 
+        var mappingLeft = mapDiffsToBlocks(diffs, DIFF.REMOVED, this.state.leftState.getCurrentContent().getBlockMap());
+        var mappingRight = mapDiffsToBlocks(diffs, DIFF.INSERTED, this.state.rightState.getCurrentContent().getBlockMap());
+
         // Update the decorators
         newState.leftState = Draft.EditorState.set(this.state.leftState, {
-            decorator: createDiffsDecorator(diffs, DIFF.REMOVED)
+            decorator: createDiffsDecorator(mappingLeft, DIFF.REMOVED)
         });
         newState.rightState = Draft.EditorState.set(this.state.rightState, {
-            decorator: createDiffsDecorator(diffs, DIFF.INSERTED)
+            decorator: createDiffsDecorator(mappingRight, DIFF.INSERTED)
         });
         this.setState(newState);
     },
@@ -97,24 +105,69 @@ var DiffArea = React.createClass({
 });
 
 function editorStateFromText(text, decorator) {
-    // For now, we can only work on a single content block.
-    var content = Draft.convertFromRaw({
-        blocks: [
-            {
-                text: text,
-                type: 'unstyled'
-            }
-        ],
-        entityMap: {}
-    });
+    var content = Draft.ContentState.createFromText(text);
     return Draft.EditorState.createWithContent(content, decorator);
 }
 
 function computeDiff(txt1, txt2) {
-    var diffs = DMP.diff_main(txt1, txt2);
-    // Simplify diffs a bit to make it human readable (but non optimal)
-    DMP.diff_cleanupSemantic(diffs);
+    var diffs = DMP.diff_wordMode(txt1, txt2);
     return diffs;
+}
+
+/**
+ * Returns the lists of highlighted ranges for each block of a blockMap
+ * @returns {Immutable.Map} blockKey -> { text, ranges: Array<{start, end}}>
+ */
+function mapDiffsToBlocks(diffs, type, blockMap) {
+    var charIndex = 0;
+    var absoluteRanges = [];
+
+    diffs.forEach(function (diff) {
+        var diffType = diff[0];
+        var diffText = diff[1];
+        if (diffType === DIFF.EQUAL) {
+            // No highlight. Move to next difference
+            charIndex += diffText.length;
+        } else if (diffType === type) {
+            // Highlight, and move to next difference
+            absoluteRanges.push({
+                start: charIndex,
+                end: charIndex + diffText.length
+            });
+            charIndex += diffText.length;
+        } else {
+            // The diff text should not be in the contentBlock, so skip.
+            return;
+        }
+    });
+
+    // `end` excluded
+    function findRangesBetween(ranges, start, end) {
+        var res = [];
+        ranges.forEach(function (range) {
+            if (range.start < end && range.end > start) {
+                var intersectionStart = Math.max(range.start, start);
+                var intersectionEnd = Math.min(range.end, end);
+                // Push relative range
+                res.push({
+                    start: intersectionStart - start,
+                    end: intersectionEnd - start
+                });
+            }
+        });
+        return res;
+    }
+
+    var blockStartIndex = 0;
+    return blockMap.map(function (block) {
+        var ranges = findRangesBetween(absoluteRanges, blockStartIndex, blockStartIndex + block.getLength());
+        blockStartIndex += block.getLength();
+        return {
+            text: block.getText(),
+            key: block.getKey(),
+            ranges: ranges
+        };
+    });
 }
 
 // Decorators
@@ -127,12 +180,11 @@ var RemovedSpan = function (props) {
 };
 
 /**
- * @param diffs The diff_match_patch result.
  * @param type The type of diff to highlight
  */
-function createDiffsDecorator(diffs, type) {
+function createDiffsDecorator(mappedRanges, type) {
     return new Draft.CompositeDecorator([{
-        strategy: findDiff.bind(undefined, diffs, type),
+        strategy: findDiff.bind(undefined, mappedRanges, type),
         component: type === DIFF.INSERTED ? InsertedSpan : RemovedSpan
     }]);
 }
@@ -141,23 +193,17 @@ function createDiffsDecorator(diffs, type) {
  * Applies the decorator callback to all differences in the single content block.
  * This needs to be cheap, because decorators are called often.
  */
-function findDiff(diffs, type, contentBlock, callback) {
-    var charIndex = 0;
-    diffs.forEach(function (diff) {
-        var diffType = diff[0];
-        var diffText = diff[1];
-        if (diffType === DIFF.EQUAL) {
-            // No highlight. Move to next difference
-            charIndex += diffText.length;
-        } else if (diffType === type) {
-            // Highlight, and move to next difference
-            callback(charIndex, charIndex + diffText.length);
-            charIndex += diffText.length;
-        } else {
-            // The diff text should not be in the contentBlock, so skip.
-            return;
+function findDiff(mappedRanges, type, contentBlock, callback) {
+    var mapping = mappedRanges.get(contentBlock.getKey());
+    if (mapping && mapping.text === contentBlock.getText()) {
+        mapping.ranges.forEach(function (range) {
+            callback(range.start, range.end);
+        });
+    } else {
+        if (mapping) {
+            console.log('Content changed', mapping.key, contentBlock.getKey());
         }
-    });
+    }
 }
 
 
