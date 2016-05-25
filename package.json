@@ -3,30 +3,38 @@
   "version": "0.0.1",
   "main": "diff-area.js",
   "scripts": {
-    "demo": "browserify -t babelify demo.js -o demo/bundle.js && http-server -c-1 demo/",
-    "test": "mocha"
+    "test": "mocha",
+    "build": "browserify -t [ babelify --presets [ react ] ] ./demo/main.js -o ./demo/bundle.js && cp ./node_modules/draft-js/dist/Draft.css ./demo/draft.css",
+    "deploy": "npm run build && gh-pages -d ./demo",
+    "watch": "watch 'npm run build' ./",
+    "serve": "http-server -p 9090 -c-1 demo/",
+    "start": "npm run build && parallelshell 'npm run serve -s' 'npm run watch -s'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Soreine/draftjs-diff.git"
+    "url": "git+https://github.com/Soreine/draft-js-diff.git"
   },
   "author": "Nicolas Gaborit",
   "bugs": {
-    "url": "https://github.com/Soreine/draftjs-diff/issues"
+    "url": "https://github.com/Soreine/draft-js-diff/issues"
   },
-  "homepage": "https://github.com/Soreine/draftjs-diff#readme",
+  "homepage": "https://github.com/Soreine/draft-js-diff#readme",
   "dependencies": {
     "diff-match-patch": "^1.0.0",
-    "draft-js": "^0.7.0",
-    "react": "^15.1.0",
-    "react-dom": "^15.1.0"
+    "lodash.debounce": "^4.0.6"
   },
   "devDependencies": {
     "babel-preset-react": "^6.5.0",
     "babelify": "^7.3.0",
     "browserify": "^13.0.1",
+    "draft-js": "^0.7.0",
+    "gh-pages": "^0.11.0",
     "http-server": "^0.9.0",
     "mocha": "^2.5.2",
-    "should": "^8.4.0"
+    "parallelshell": "^2.0.0",
+    "react": "^15.1.0",
+    "react-dom": "^15.1.0",
+    "should": "^8.4.0",
+    "watch": "^0.18.0"
   }
 }

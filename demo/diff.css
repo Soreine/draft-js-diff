@@ -2,10 +2,6 @@ body {
     font-family: monospace;
 }
 
-.left {
-    color: #666;
-}
-
 .left, .right {
     width: 44%;
     margin: 20px 3%;
