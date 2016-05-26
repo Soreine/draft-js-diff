@@ -7,9 +7,9 @@
     "test": "mocha",
     "build": "browserify -t [ babelify --presets [ react ] ] ./demo/main.js -o ./demo/bundle.js && cp ./node_modules/draft-js/dist/Draft.css ./demo/draft.css",
     "deploy": "npm run build && gh-pages -d ./demo",
-    "watch": "watch 'npm run build' ./",
+    "watch": "watch 'npm run build' lib/",
     "serve": "http-server -p 9090 demo/",
-    "start": "npm run build && npm run serve -s"
+    "start": "npm run build && parallelshell 'npm run serve -s' 'npm run watch'"
   },
   "repository": {
     "type": "git",
