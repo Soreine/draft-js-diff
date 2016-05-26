@@ -83,9 +83,10 @@ var oldTextStrategies = DraftDiff.diffDecoratorStrategies(diffs, false, blockMap
 // Create strategies for the editor containing the new text
 var newTextStrategies = DraftDiff.diffDecoratorStrategies(diffs, true, blockMap2);
 
-newTextStrategy.getEqualStrategy() // Function that works as strategy to decorate unchanged spans of text
-newTextStrategy.getInsertStrategy() // Function that works as strategy to decorate inserted spans of text
-newTextStrategy.getDeleteStrategy() // Function that works as strategy to decorate deleted spans of text
+// 3 functions that works as strategy to decorate spans of text that were...
+newTextStrategies.getEqualStrategy() // ... unchanged
+newTextStrategies.getInsertStrategy() // ... inserted
+newTextStrategies.getDeleteStrategy() // ... deleted
 ```
 
 #### Creating decorators
