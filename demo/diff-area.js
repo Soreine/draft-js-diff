@@ -3,16 +3,9 @@ var Immutable = require('immutable');
 var Draft = require('draft-js');
 var debounce = require('lodash.debounce');
 
-var diff_word_mode = require('./lib/diff-word-mode');
+var diff_word_mode = require('../lib/diff-word-mode');
 
 var DWM = new diff_word_mode();
-
-// diff_match_patch codes
-var DIFF = {
-    DELETE: -1,
-    INSERT: 1,
-    EQUAL: 0
-};
 
 var DEBOUNCE_WAIT = 300; // ms
 var DEBOUNCE_OPTS = {
@@ -40,14 +33,14 @@ var DiffArea = React.createClass({
 
         // Compute diff on whole texts
         var diffs = computeDiff(left, right);
-        var mappingLeft = mapDiffsToBlocks(diffs, DIFF.REMOVED, state.leftState.getCurrentContent().getBlockMap());
-        var mappingRight = mapDiffsToBlocks(diffs, DIFF.INSERTED, state.rightState.getCurrentContent().getBlockMap());
+        var mappingLeft = mapDiffsToBlocks(diffs, diff_word_mode.DIFF_DELETE, state.leftState.getCurrentContent().getBlockMap());
+        var mappingRight = mapDiffsToBlocks(diffs, diff_word_mode.DIFF_INSERT, state.rightState.getCurrentContent().getBlockMap());
         // Update the decorators
         state.leftState = Draft.EditorState.set(state.leftState, {
-            decorator: createDiffsDecorator(mappingLeft, DIFF.REMOVED)
+            decorator: createDiffsDecorator(mappingLeft, diff_word_mode.DIFF_DELETE)
         });
         state.rightState = Draft.EditorState.set(state.rightState, {
-            decorator: createDiffsDecorator(mappingRight, DIFF.INSERTED)
+            decorator: createDiffsDecorator(mappingRight, diff_word_mode.DIFF_INSERT)
         });
 
         return state;
@@ -88,15 +81,15 @@ var DiffArea = React.createClass({
 
         var diffs = computeDiff(left, right);
 
-        var mappingLeft = mapDiffsToBlocks(diffs, DIFF.REMOVED, this.state.leftState.getCurrentContent().getBlockMap());
-        var mappingRight = mapDiffsToBlocks(diffs, DIFF.INSERTED, this.state.rightState.getCurrentContent().getBlockMap());
+        var mappingLeft = mapDiffsToBlocks(diffs, diff_word_mode.DIFF_DELETE, this.state.leftState.getCurrentContent().getBlockMap());
+        var mappingRight = mapDiffsToBlocks(diffs, diff_word_mode.DIFF_INSERT, this.state.rightState.getCurrentContent().getBlockMap());
 
         // Update the decorators
         newState.leftState = Draft.EditorState.set(this.state.leftState, {
-            decorator: createDiffsDecorator(mappingLeft, DIFF.REMOVED)
+            decorator: createDiffsDecorator(mappingLeft, diff_word_mode.DIFF_DELETE)
         });
         newState.rightState = Draft.EditorState.set(this.state.rightState, {
-            decorator: createDiffsDecorator(mappingRight, DIFF.INSERTED)
+            decorator: createDiffsDecorator(mappingRight, diff_word_mode.DIFF_INSERT)
         });
         this.setState(newState);
     },
@@ -140,7 +133,7 @@ function mapDiffsToBlocks(diffs, type, blockMap) {
     diffs.forEach(function (diff) {
         var diffType = diff[0];
         var diffText = diff[1];
-        if (diffType === DIFF.EQUAL) {
+        if (diffType === diff_word_mode.DIFF_EQUAL) {
             // No highlight. Move to next difference
             charIndex += diffText.length;
         } else if (diffType === type) {
@@ -156,7 +149,13 @@ function mapDiffsToBlocks(diffs, type, blockMap) {
         }
     });
 
-    // `end` excluded
+    /**
+     * @param {Array<Range>} ranges
+     * @param {Number} start
+     * @param {Number} end
+     * @return {Array<Range>} All the ranges that overlapped
+     * start-end, cropped and re-indexed to be relative to start.
+     */
     function findRangesBetween(ranges, start, end) {
         var res = [];
         ranges.forEach(function (range) {
@@ -199,7 +198,7 @@ var RemovedSpan = function (props) {
 function createDiffsDecorator(mappedRanges, type) {
     return new Draft.CompositeDecorator([{
         strategy: findDiff.bind(undefined, mappedRanges, type),
-        component: type === DIFF.INSERTED ? InsertedSpan : RemovedSpan
+        component: type === diff_word_mode.DIFF_INSERT ? InsertedSpan : RemovedSpan
     }]);
 }
 

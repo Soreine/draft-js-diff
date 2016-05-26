@@ -1,3 +1,4 @@
+
 {
   "name": "draft-js-diff",
   "version": "0.0.1",
@@ -7,8 +8,8 @@
     "build": "browserify -t [ babelify --presets [ react ] ] ./demo/main.js -o ./demo/bundle.js && cp ./node_modules/draft-js/dist/Draft.css ./demo/draft.css",
     "deploy": "npm run build && gh-pages -d ./demo",
     "watch": "watch 'npm run build' ./",
-    "serve": "http-server -p 9090 -c-1 demo/",
-    "start": "npm run build && parallelshell 'npm run serve -s' 'npm run watch -s'"
+    "serve": "http-server -p 9090 demo/",
+    "start": "npm run build && npm run serve -s"
   },
   "repository": {
     "type": "git",
