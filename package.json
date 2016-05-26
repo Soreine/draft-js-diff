@@ -1,15 +1,14 @@
-
 {
   "name": "draft-js-diff",
   "version": "0.0.1",
-  "main": "diff-area.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "mocha",
-    "build": "browserify -t [ babelify --presets [ react ] ] ./demo/main.js -o ./demo/bundle.js && cp ./node_modules/draft-js/dist/Draft.css ./demo/draft.css",
+    "build": "rm -rf _site && mkdir _site && browserify -t [ babelify --presets [ react ] ] demo/main.js -o _site/bundle.js && cp ./node_modules/draft-js/dist/Draft.css demo/diff.css demo/index.html _site/",
     "deploy": "npm run build && gh-pages -d ./demo",
-    "watch": "watch 'npm run build' lib/",
-    "serve": "http-server -p 9090 demo/",
-    "start": "npm run build && parallelshell 'npm run serve -s' 'npm run watch'"
+    "watch": "watch 'npm run build' lib/ demo/",
+    "serve": "http-server -p 9090 _site/",
+    "start": "parallelshell 'npm run watch' 'npm run serve -s'"
   },
   "repository": {
     "type": "git",
@@ -21,10 +20,10 @@
   },
   "homepage": "https://github.com/Soreine/draft-js-diff#readme",
   "dependencies": {
-    "diff-match-patch": "^1.0.0",
-    "lodash.debounce": "^4.0.6"
+    "diff-match-patch": "^1.0.0"
   },
   "devDependencies": {
+    "lodash.debounce": "^4.0.6",
     "babel-preset-react": "^6.5.0",
     "babelify": "^7.3.0",
     "browserify": "^13.0.1",

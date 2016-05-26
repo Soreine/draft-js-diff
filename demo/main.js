@@ -1,7 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-var DiffArea = require('./diff-area');
+var DiffEditor = require('./diffEditor');
 var data = require('../test/data');
 
 // ---- main
@@ -9,6 +9,7 @@ var data = require('../test/data');
 left = data.text1;
 right = data.text2;
 
-ReactDOM.render(<DiffArea left={left} right={right}></DiffArea>,
+ReactDOM.render(
+    <DiffEditor left={left} right={right}></DiffEditor>,
     document.getElementById('content')
 );

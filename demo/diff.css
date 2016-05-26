@@ -9,9 +9,12 @@ body {
     vertical-align: text-top;
 }
 
-.removed {
+.diff-delete {
     background-color: #ffecec
 }
-.inserted {
+.diff-equal {
+    background-color: #ffffee
+}
+.diff-insert {
     background-color: #eaffea
 }
