@@ -1,11 +1,12 @@
 {
   "name": "draft-js-diff",
   "version": "0.0.1",
+  "license": "MIT",
   "main": "./lib/index.js",
   "scripts": {
     "test": "mocha",
     "build": "rm -rf _site && mkdir _site && browserify -t [ babelify --presets [ react ] ] demo/main.js -o _site/bundle.js && cp ./node_modules/draft-js/dist/Draft.css demo/diff.css demo/index.html _site/",
-    "deploy": "npm run build && gh-pages -d ./demo",
+    "deploy": "npm run build && gh-pages -d _site",
     "watch": "watch 'npm run build' lib/ demo/",
     "serve": "http-server -p 9090 _site/",
     "start": "parallelshell 'npm run watch' 'npm run serve -s'"
