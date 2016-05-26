@@ -6,8 +6,13 @@ var data = require('../test/data');
 
 // ---- main
 
-left = data.text1;
-right = data.text2;
+
+var left = {
+    initial: data.text1
+};
+var right = {
+    initial: data.text2
+};
 
 ReactDOM.render(
     <DiffEditor left={left}

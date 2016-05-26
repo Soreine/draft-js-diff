@@ -122,12 +122,22 @@ As the texts grow, the editing becomes laggy. You might want to stop trying to r
 ```js
 /**
  * Displays two Draft.Editor decorated with diffs.
- * @prop {String} [initialLeft=''] The initial left text (or old text)
- * @prop {String} [initialRight=''] The initial right text (or new text)
  * @prop {Number} [debounceWait=-1] Milliseconds. Delay for the
- * calculation of diffs. -1 to disable debouncing.
- * @prop {Function} [onRightChange] Callback called with the right EditorState changes.
- * @prop {Function} [onLeftChange] Callback called when the left EditorState changes.
+ * updating the diffs. -1 to disable debouncing.
+ * @prop {Object} [left] Props for the left editor (containing the old text)
+ * @prop {Object} [right] Props for the right editor (containing the new text)
+ * @prop {String} [left.initial=''] The initial left text
+ * @prop {String} [right.initial=''] The initial right text
+ * @prop {Boolean} [left.hidden=false] Whether to actually display an editor
+ * @prop {Boolean} [right.hidden=false] Whether to actually display an editor
+ * @prop {Boolean} [left.readOnly=false] Make the left editor read only.
+ * @prop {Boolean} [right.readOnly=false] Make the right editor read only.
+ * @prop {Function} [right.onChange] Callback called with the right EditorState changes.
+ * @prop {Function} [left.onChange] Callback called when the left EditorState changes.
+ * @prop {Draft.EditorState} [right.state] Be sure to pass back the
+ * updated state if you listen to right.onChange.
+ * @prop {Draft.EditorState} [left.state]  Be sure to pass back the
+ * updated state if you listen to left.onChange.
  */
 DraftDiff.DiffEditor // React Component
 ```
