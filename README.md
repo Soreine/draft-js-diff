@@ -2,6 +2,15 @@
 
 Create side-by-side text editors with highlighted diffs, using [DraftJS](http://facebook.github.io/draft-js/).
 
+Table of content:
+
+- [Demo](#demo)
+- [Usage](#usage)
+  - [Using the DiffEditor](#using-the-diffeditor)
+  - [Using Decorators Strategies](#creating-compositedecorator-strategies)
+- [Shortcomings](#shortcomings)
+- [API Reference](#api-reference)
+
 ## Demo
 
 **[Live demo here](//soreine.github.io/draft-js-diff/)**
@@ -87,7 +96,7 @@ Here is an [example of decorator](lib/diffDecorator.js), based on the created st
 
 When the texts changed (and the diffs too), you need to re-create strategies from the new diff. That's a limitation of using decorators, they are only aware of the blocks they decorate, and not the whole texts, so you need to create them anew to update the diffs.
 
-## Pitfalls
+## Shortcomings
 
 ### Can't do more than word-level diffing
 
