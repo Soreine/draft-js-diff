@@ -1,4 +1,20 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var React = require('react');
+var ReactDOM = require('react-dom');
+
+var DiffEditor = require('../').DiffEditor;
+var data = require('../test/data');
+
+// ---- main
+
+left = data.text1;
+right = data.text2;
+
+ReactDOM.render(React.createElement(DiffEditor, { left: left,
+            right: right,
+            debounceWait: 300 }), document.getElementById('content'));
+
+},{"../":7,"../test/data":303,"react":301,"react-dom":163}],2:[function(require,module,exports){
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var React = require('react');
@@ -49,149 +65,7 @@ var DeleteSpan = function (props) {
 
 module.exports = diffDecorator;
 
-},{"draft-js":20,"react":301}],2:[function(require,module,exports){
-var React = require('react');
-var Draft = require('draft-js');
-var debounce = require('lodash.debounce');
-
-var DraftDiff = require('../');
-
-var diffDecorator = require('./diffDecorator');
-
-var DEBOUNCE_WAIT = 300; // ms
-var DEBOUNCE_OPTS = {
-    trailing: true // We want to update after the delay only
-};
-
-var DiffEditor = React.createClass({
-    displayName: 'DiffEditor',
-
-
-    propTypes: {
-        left: React.PropTypes.string,
-        right: React.PropTypes.string
-    },
-
-    getInitialState: function () {
-        // Make a debounced diff update
-        this.debouncedUpdateDiffs = debounce(this.updateDiffs, DEBOUNCE_WAIT, DEBOUNCE_OPTS);
-
-        var left = this.props.left;
-        var right = this.props.right;
-
-        // Create editors state
-        var state = {
-            leftState: editorStateFromText(left),
-            rightState: editorStateFromText(right)
-        };
-
-        return this.diffDecorateEditors(state);
-    },
-
-    updateDiffs: function () {
-        this.setState(this.diffDecorateEditors(this.state));
-    },
-
-    diffDecorateEditors: function (state) {
-        var leftState = state.leftState;
-        var rightState = state.rightState;
-
-        var leftContentState = leftState.getCurrentContent();
-        var rightContentState = rightState.getCurrentContent();
-
-        var decorators = createDiffsDecorators(leftContentState, rightContentState);
-
-        return {
-            leftState: Draft.EditorState.set(leftState, { decorator: decorators.left }),
-            rightState: Draft.EditorState.set(rightState, { decorator: decorators.right })
-        };
-    },
-
-    onChange: function (leftState, rightState) {
-        // Texts changed ?
-        var rightChanged = this.state.rightState.getCurrentContent() !== rightState.getCurrentContent();
-        var leftChanged = this.state.leftState.getCurrentContent() !== leftState.getCurrentContent();
-        // Update diffs
-        if (leftChanged || rightChanged) {
-            this.debouncedUpdateDiffs();
-        }
-        // Update the EditorState
-        this.setState({
-            leftState: leftState,
-            rightState: rightState
-        });
-    },
-
-    onRightChange: function (rightState) {
-        this.onChange(this.state.leftState, rightState);
-    },
-
-    onLeftChange: function (leftState) {
-        this.onChange(leftState, this.state.rightState);
-    },
-
-    render: function () {
-        return React.createElement(
-            'div',
-            { className: 'diffarea' },
-            React.createElement(
-                'div',
-                { className: 'left' },
-                React.createElement(Draft.Editor, {
-                    editorState: this.state.leftState,
-                    onChange: this.onLeftChange
-                })
-            ),
-            React.createElement(
-                'div',
-                { className: 'right' },
-                React.createElement(Draft.Editor, {
-                    editorState: this.state.rightState,
-                    onChange: this.onRightChange
-                })
-            )
-        );
-    }
-});
-
-function editorStateFromText(text) {
-    var content = Draft.ContentState.createFromText(text);
-    return Draft.EditorState.createWithContent(content);
-}
-
-function createDiffsDecorators(leftContentState, rightContentState) {
-    // Compute diff on whole texts
-    var left = leftContentState.getPlainText();
-    var right = rightContentState.getPlainText();
-    var diffs = DraftDiff.diffWordMode(left, right);
-
-    // Create strategies
-    var leftStrategies = DraftDiff.diffDecoratorStrategies(diffs, false, leftContentState.getBlockMap());
-    var rightStrategies = DraftDiff.diffDecoratorStrategies(diffs, true, rightContentState.getBlockMap());
-
-    return {
-        left: diffDecorator(leftStrategies),
-        right: diffDecorator(rightStrategies)
-    };
-}
-
-module.exports = DiffEditor;
-
-},{"../":7,"./diffDecorator":1,"draft-js":20,"lodash.debounce":160,"react":301}],3:[function(require,module,exports){
-var React = require('react');
-var ReactDOM = require('react-dom');
-
-var DiffEditor = require('./diffEditor');
-var data = require('../test/data');
-
-// ---- main
-
-left = data.text1;
-right = data.text2;
-
-ReactDOM.render(React.createElement(DiffEditor, { left: left, right: right }), document.getElementById('content'));
-
-},{"../test/data":303,"./diffEditor":2,"react":301,"react-dom":163}],4:[function(require,module,exports){
+},{"draft-js":20,"react":301}],3:[function(require,module,exports){
 var Strategies = require('./strategies');
 var DIFF_TYPE = require('./diffType');
 
@@ -333,7 +207,167 @@ function strategyFromMapping(mappedRanges, blockMap) {
 
 module.exports = diffDecoratorStrategies;
 
-},{"./diffType":5,"./strategies":8}],5:[function(require,module,exports){
+},{"./diffType":5,"./strategies":8}],4:[function(require,module,exports){
+var React = require('react');
+var Draft = require('draft-js');
+var debounce = require('lodash.debounce');
+
+var diffWordMode = require('./diffWordMode');
+var diffDecoratorStrategies = require('./diffDecoratorStrategies');
+var diffDecorator = require('./diffDecorator');
+
+/**
+ * Displays two Draft.Editor decorated with diffs.
+ * @prop {String} [initialLeft=''] The initial left text (or old text)
+ * @prop {String} [initialRight=''] The initial right text (or new text)
+ * @prop {Number} [debounceWait=-1] Milliseconds. Delay for the
+ * calculation of diffs. -1 to disable debouncing.
+ * @prop {Function} [onRightChange] Callback called with the right EditorState changes.
+ * @prop {Function} [onLeftChange] Callback called when the left EditorState changes.
+ */
+var DiffEditor = React.createClass({
+    displayName: 'DiffEditor',
+
+
+    propTypes: {
+        left: React.PropTypes.string,
+        right: React.PropTypes.string,
+        debounceWait: React.PropTypes.number,
+        onRightChange: React.PropTypes.func,
+        onLeftChange: React.PropTypes.func
+    },
+
+    getDefaultProps: function () {
+        return {
+            left: '',
+            right: '',
+            debounceWait: -1,
+            onRightChange: NO_OP,
+            onLeftChange: NO_OP
+        };
+    },
+
+    getInitialState: function () {
+        // Make a debounced diff update
+        if (this.props.debounceWait >= 0) {
+            this.debouncedUpdateDiffs = debounce(this.updateDiffs, this.props.debounceWait, { trailing: true });
+        }
+
+        var left = this.props.left;
+        var right = this.props.right;
+
+        // Create editors state
+        var state = {
+            leftState: editorStateFromText(left),
+            rightState: editorStateFromText(right)
+        };
+
+        return diffDecorateEditors(state);
+    },
+
+    updateDiffs: function () {
+        this.setState(diffDecorateEditors(this.state));
+    },
+
+    onChange: function (leftState, rightState) {
+        // Texts changed ?
+        var rightChanged = this.state.rightState.getCurrentContent() !== rightState.getCurrentContent();
+        var leftChanged = this.state.leftState.getCurrentContent() !== leftState.getCurrentContent();
+
+        var newState = {
+            leftState: leftState,
+            rightState: rightState
+        };
+        if (leftChanged || rightChanged) {
+            // Update diffs
+            if (this.props.debounceWait >= 0) {
+                // Update diff later
+                this.debouncedUpdateDiffs();
+                this.setState(newState);
+            } else {
+                // Update diff now
+                this.setState(diffDecorateEditors(newState));
+            }
+        } else {
+            this.setState(newState);
+        }
+    },
+
+    onRightChange: function (rightState) {
+        this.onChange(this.state.leftState, rightState);
+        this.props.onRightChange(rightState);
+    },
+
+    onLeftChange: function (leftState) {
+        this.onChange(leftState, this.state.rightState);
+        this.props.onLeftChange(leftState);
+    },
+
+    render: function () {
+        return React.createElement(
+            'div',
+            { className: 'diffarea' },
+            React.createElement(
+                'div',
+                { className: 'left' },
+                React.createElement(Draft.Editor, {
+                    editorState: this.state.leftState,
+                    onChange: this.onLeftChange
+                })
+            ),
+            React.createElement(
+                'div',
+                { className: 'right' },
+                React.createElement(Draft.Editor, {
+                    editorState: this.state.rightState,
+                    onChange: this.onRightChange
+                })
+            )
+        );
+    }
+});
+
+function editorStateFromText(text) {
+    var content = Draft.ContentState.createFromText(text);
+    return Draft.EditorState.createWithContent(content);
+}
+
+function diffDecorateEditors(state) {
+    var leftState = state.leftState;
+    var rightState = state.rightState;
+
+    var leftContentState = leftState.getCurrentContent();
+    var rightContentState = rightState.getCurrentContent();
+
+    var decorators = createDiffsDecorators(leftContentState, rightContentState);
+
+    return {
+        leftState: Draft.EditorState.set(leftState, { decorator: decorators.left }),
+        rightState: Draft.EditorState.set(rightState, { decorator: decorators.right })
+    };
+}
+
+function createDiffsDecorators(leftContentState, rightContentState) {
+    // Compute diff on whole texts
+    var left = leftContentState.getPlainText();
+    var right = rightContentState.getPlainText();
+    var diffs = diffWordMode(left, right);
+
+    // Create strategies
+    var leftStrategies = diffDecoratorStrategies(diffs, false, leftContentState.getBlockMap());
+    var rightStrategies = diffDecoratorStrategies(diffs, true, rightContentState.getBlockMap());
+
+    return {
+        left: diffDecorator(leftStrategies),
+        right: diffDecorator(rightStrategies)
+    };
+}
+
+function NO_OP() {}
+
+module.exports = DiffEditor;
+
+},{"./diffDecorator":2,"./diffDecoratorStrategies":3,"./diffWordMode":6,"draft-js":20,"lodash.debounce":160,"react":301}],5:[function(require,module,exports){
 var diff_match_patch = require('diff-match-patch');
 
 var DIFF_TYPE = {
@@ -457,11 +491,13 @@ module.exports = diffWordMode;
 },{"diff-match-patch":9}],7:[function(require,module,exports){
 module.exports = {
     DIFF_TYPE: require('./diffType'),
+    DiffEditor: require('./diffEditor'),
     diffDecoratorStrategies: require('./diffDecoratorStrategies'),
-    diffWordMode: require('./diffWordMode.js')
+    diffWordMode: require('./diffWordMode.js'),
+    diffDecorator: require('./diffDecorator.js')
 };
 
-},{"./diffDecoratorStrategies":4,"./diffType":5,"./diffWordMode.js":6}],8:[function(require,module,exports){
+},{"./diffDecorator.js":2,"./diffDecoratorStrategies":3,"./diffEditor":4,"./diffType":5,"./diffWordMode.js":6}],8:[function(require,module,exports){
 var DIFF_TYPE = require('./diffType');
 
 /**
@@ -39619,4 +39655,4 @@ module.exports = {
     text2: 'Hello, this is a splitted,\n\nfirst block.\n\nThis is a modified block.\n\nHere is a third block.'
 };
 
-},{}]},{},[3]);
+},{}]},{},[1]);
