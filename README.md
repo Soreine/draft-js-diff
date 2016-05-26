@@ -1,6 +1,6 @@
 # draft-js-diff #
 
-Experiment to make side by side DraftJS editors with highlighted diffs.
+Create side-by-side text editors with highlighted diffs, using [DraftJS](http://facebook.github.io/draft-js/).
 
 ## Demo
 
