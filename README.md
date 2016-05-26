@@ -4,7 +4,7 @@ Create side-by-side text editors with highlighted diffs, using [DraftJS](http://
 
 ## Demo
 
-**[Live demo here](soreine.github.io/draft-js-diff/)**
+**[Live demo here](//soreine.github.io/draft-js-diff/)**
 
 Or you can serve the demo locally by cloning this repository and:
 
