@@ -1,5 +1,12 @@
 {
   "name": "draft-js-diff",
+  "description": "Make React text editors with live highlight of differences, using DraftJS",
+  "keywords": [
+      "react-component",
+      "diff",
+      "draft",
+      "draft-js"
+  ],
   "version": "0.0.1",
   "license": "MIT",
   "main": "./lib/index.js",
