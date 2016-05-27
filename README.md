@@ -40,8 +40,8 @@ You can use the base React component shown in the demo to simply display two sid
 var DiffEditor = DraftDiff.DiffEditor;
 
 ReactDOM.render(
-    <DiffEditor left={left}
-                right={right}>
+    <DiffEditor before={before}
+                after={after}>
     </DiffEditor>,
     document.getElementById('target')
 );
@@ -125,20 +125,15 @@ As the texts grow, the editing becomes laggy. You might want to stop trying to r
  * Displays two Draft.Editor decorated with diffs.
  * @prop {Number} [debounceWait=-1] Milliseconds. Delay for the
  * updating the diffs. -1 to disable debouncing.
- * @prop {Object} [left] Props for the left editor (containing the old text)
- * @prop {Object} [right] Props for the right editor (containing the new text)
- * @prop {String} [left.initial=''] The initial left text
- * @prop {String} [right.initial=''] The initial right text
- * @prop {Boolean} [left.hidden=false] Whether to actually display an editor
- * @prop {Boolean} [right.hidden=false] Whether to actually display an editor
- * @prop {Boolean} [left.readOnly=false] Make the left editor read only.
- * @prop {Boolean} [right.readOnly=false] Make the right editor read only.
- * @prop {Function} [right.onChange] Callback called with the right EditorState changes.
- * @prop {Function} [left.onChange] Callback called when the left EditorState changes.
- * @prop {Draft.EditorState} [right.state] Be sure to pass back the
- * updated state if you listen to right.onChange.
- * @prop {Draft.EditorState} [left.state]  Be sure to pass back the
- * updated state if you listen to left.onChange.
+ * @prop {Object} [before] Props for the before editor (containing the old text)
+ * Same options than `after`.
+ * @prop {Object} [after] Props for the after editor (containing the new text)
+ * @prop {String} [after.initial=''] The initial after text
+ * @prop {Boolean} [after.hidden=false] Whether to actually display an editor
+ * @prop {Boolean} [after.readOnly=false] Make the after editor read only.
+ * @prop {Function} [after.onChange] Callback called with the after EditorState changes.
+ * @prop {Draft.EditorState} [after.state] Be sure to pass back the
+ * updated state if you listen to after.onChange.
  */
 DraftDiff.DiffEditor // React Component
 ```

@@ -36,6 +36,7 @@
     "parallelshell": "^2.0.0",
     "react": "^15.0.0",
     "react-dom": "^15.0.0",
+    "reactify": "^1.0.0",
     "watch": "^0.18.0"
   },
   "browserify": {
