@@ -25,7 +25,6 @@ var Test = React.createClass({
     },
 
     onChange: function (afterState) {
-        console.log('Test.onChange');
         this.setState({
             afterState: afterState
         });
@@ -307,7 +306,6 @@ var DiffEditor = React.createClass({
     },
 
     getInitialState: function () {
-        console.log('getInitialState');
         // Anti-patterns everywhere...
         return this.createInitialState(this.props);
     },
@@ -327,7 +325,6 @@ var DiffEditor = React.createClass({
     },
 
     componentWillReceiveProps: function (props) {
-        console.log('componentWillReceiveProps', props);
         // New initial state ?
         if (props.before.initial !== this.props.before.initial || props.after.initial !== this.props.after.initial) {
             return this.setState(this.createInitialState(props));
@@ -348,12 +345,10 @@ var DiffEditor = React.createClass({
     },
 
     updateDiffs: function () {
-        console.log('updateDiffs');
         this.setState(diffDecorateEditors(this.state));
     },
 
     onChange: function (beforeState, afterState) {
-        console.log('onChange');
         // Texts changed ?
         var afterChanged = contentChanged(this.state.afterState, afterState);
         var beforeChanged = contentChanged(this.state.beforeState, beforeState);
@@ -378,7 +373,6 @@ var DiffEditor = React.createClass({
     },
 
     onAfterChange: function (afterState) {
-        console.log('onAfterChange');
         var afterChanged = contentChanged(this.state.afterState, afterState);
         if (this.props.after.onChange && afterChanged) {
             this.props.after.onChange(afterState);
@@ -388,7 +382,6 @@ var DiffEditor = React.createClass({
     },
 
     onBeforeChange: function (beforeState) {
-        console.log('onBeforeChange');
         var beforeChanged = contentChanged(this.state.beforeState, beforeState);
         if (this.props.before.onChange && beforeChanged) {
             this.props.before.onChange(beforeState);
