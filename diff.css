@@ -2,7 +2,7 @@ body {
     font-family: monospace;
 }
 
-.left, .right {
+.diff-before, .diff-after {
     width: 44%;
     margin: 20px 3%;
     display: inline-block;
