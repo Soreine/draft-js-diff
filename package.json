@@ -1,6 +1,6 @@
 {
   "name": "draft-js-diff",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Make React text editors with live highlight of differences, using DraftJS",
   "keywords": [
     "react-component",
