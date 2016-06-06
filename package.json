@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Make React text editors with live highlight of differences, using DraftJS",
   "keywords": [
-      "react-component",
-      "diff",
-      "draft",
-      "draft-js"
+    "react-component",
+    "diff",
+    "draft",
+    "draft-js"
   ],
   "license": "MIT",
   "main": "./lib/index.js",
@@ -29,9 +29,9 @@
   "homepage": "https://github.com/Soreine/draft-js-diff#readme",
   "dependencies": {
     "diff-match-patch": "^1.0.0",
-    "lodash.debounce": "^4.0.6",
-    "react": "^15.0.0",
-    "draft-js": "^0.7.0"
+    "draft-js": "^0.7.0",
+    "just-debounce": "^1.0.0",
+    "react": "^15.0.0-rc || ^14.0.0"
   },
   "devDependencies": {
     "babel-preset-react": "^6.5.0",
@@ -47,6 +47,8 @@
     "watch": "^0.18.0"
   },
   "browserify": {
-    "transform": ["reactify"]
+    "transform": [
+      "reactify"
+    ]
   }
 }

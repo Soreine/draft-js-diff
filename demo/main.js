@@ -40,7 +40,7 @@ var Test = React.createClass({
         };
         return <DiffEditor before={before}
                            after={after}
-                           debounceWait={300}>
+                           debounceWait={-1}>
         </DiffEditor>;
     }
 });
