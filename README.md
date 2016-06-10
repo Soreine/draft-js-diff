@@ -1,5 +1,7 @@
 # draft-js-diff #
 
+![NPM Version](https://badge.fury.io/js/draft-js-diff.svg)
+
 Create side-by-side text editors with highlighted diffs, using [DraftJS](http://facebook.github.io/draft-js/).
 
 Table of content:
